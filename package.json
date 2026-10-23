@@ -1,0 +1,10 @@
+{
+  "name": "sidequest-ascii-portfolio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/game.test.mjs",
+    "start": "python -m http.server 4173 --directory dist"
+  }
+}
