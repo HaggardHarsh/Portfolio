@@ -22,8 +22,12 @@ Rendering, camera, audio, ambient-motion and discovery preferences are stored lo
 
 ## Assets and evidence
 
-The selected nature models and animated explorer are CC0 assets from Quaternius. See `public/models/ASSETS.md` and `public/models/CC0.txt` for exact sources. The cabin, props, glyph atlas, material textures and environmental effects are authored in code.
+The nature models are CC0 assets from Quaternius. The realistically proportioned human visitor is Adobe Mixamo Remy, with a native idle and retargeted walking/running clips, used under the Mixamo licence. See `public/models/ASSETS.md` and `public/models/HUMAN_ASSET.md` for exact sources and terms. This generic visitor is not a portrait of the-builder.
+
+Weathered wood, slate, mossy rock, forest floor and dirt-path PBR maps are CC0 scans from Poly Haven. Their colour, normal, roughness and ambient-occlusion maps are bundled locally; `public/materials/ASSETS.md` records sources and optimization. `src/materials.js` loads these surfaces and applies metre-scaled UVs. The cabin geometry, props, backpack, glyph atlas, cloth weave and environmental effects are authored in code.
+
+The backpack follows the upper-body bone rather than floating independently of the walking rig. Detailed nearby trees transition to renderer-captured images of the same models in the distance, replacing the previous geometric canopy placeholders. Grass uses fine curved blades and the trail keeps large rocks clear of its walking corridor.
 
 Project copy and images are grounded in the-builder's public repositories: [SinceLastTime](https://github.com/portfolio-owner/SinceLastTime), [Project Blob](https://github.com/portfolio-owner/ProjectBlob), and [HumanResumeFilter](https://github.com/portfolio-owner/HumanResumeFilter). Name, email and LinkedIn were supplied by the owner. No employment history, résumé, project ownership split, or outcome metrics have been invented.
 
-The previous village edition is backed up in ignored `artifacts/backups/edition-05/` and remains recoverable in Git. The existing public Site identity is preserved in `.openai/hosting.json`.
+The previous village and initial woodland editions are backed up in ignored `artifacts/backups/` and remain recoverable in Git. The existing public Site identity is preserved in `.openai/hosting.json`.

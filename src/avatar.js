@@ -1,19 +1,63 @@
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+function canvasFabric(){
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=128;
+ const c=canvas.getContext('2d');c.fillStyle='#a89b79';c.fillRect(0,0,128,128);
+ for(let y=0;y<128;y+=2){c.fillStyle=y%4?'#b3a685':'#958965';c.fillRect(0,y,128,1);}
+ for(let x=0;x<128;x+=3){c.fillStyle='#554e3820';c.fillRect(x,0,1,128);}
+ const map=new T.CanvasTexture(canvas);map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(2,2);return map;
+}
+
 export async function createAvatar(scene){
- const root=new T.Group();scene.add(root);let mixer,actions={},current;
- const fallback=new T.Group();root.add(fallback);const body=new T.Mesh(new T.CapsuleGeometry(.25,.65,5,8),new T.MeshStandardMaterial({color:0x7b6e50,roughness:.9}));body.position.y=1.03;fallback.add(body);const head=new T.Mesh(new T.SphereGeometry(.16,10,8),new T.MeshStandardMaterial({color:0xc19b77}));head.position.y=1.67;fallback.add(head);const legs=[];
- for(const x of [-.13,.13]){const leg=new T.Mesh(new T.CapsuleGeometry(.09,.46,4,6),new T.MeshStandardMaterial({color:0x39483c}));leg.position.set(x,.37,0);fallback.add(leg);legs.push(leg);}
- const pack=new T.Mesh(new RoundedBoxGeometry(.36,.44,.22,2,.04),new T.MeshStandardMaterial({color:0x655b3e,roughness:.9}));pack.position.set(0,1.18,-.23);root.add(pack);
- const pocket=new T.Mesh(new RoundedBoxGeometry(.27,.2,.06,2,.02),new T.MeshStandardMaterial({color:0x8a7852,roughness:.9}));pocket.position.set(0,-.06,-.13);pack.add(pocket);for(const x of [-.11,.11]){const strap=new T.Mesh(new T.BoxGeometry(.035,.41,.025),new T.MeshStandardMaterial({color:0x342e26}));strap.position.set(x,0,-.14);pack.add(strap);}
- try{const manifest=await (await fetch('./models/manifest.json')).json();const gltf=await new GLTFLoader().loadAsync(manifest.character);const model=gltf.scene,bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),scale=1.8/size.y;model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
-  model.traverse(o=>{if(!o.isMesh)return;o.castShadow=o.receiveShadow=true;o.material=o.material.clone();o.material.roughness=.9;o.material.color.set(o.material.name==='M_Joints'?0x444c3e:0xffffff);
-   if(o.material.name==='M_Main'){o.material.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nvarying float avatarHeight;').replace('#include <begin_vertex>','#include <begin_vertex>\navatarHeight=position.y;');shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nvarying float avatarHeight;').replace('#include <color_fragment>',`#include <color_fragment>\nvec3 clothing=avatarHeight>1.48?vec3(.58,.40,.26):avatarHeight>.92?vec3(.29,.34,.24):avatarHeight>.18?vec3(.12,.18,.15):vec3(.07,.08,.07);diffuseColor.rgb*=clothing;`);};}
-  });fallback.visible=false;root.add(model);mixer=new T.AnimationMixer(model);
-  for(const [name,pattern]of Object.entries({idle:/^Idle_Loop$/i,walk:/^Walk_Loop$/i,run:/^Jog_Fwd_Loop$/i})){const clip=gltf.animations.find(a=>pattern.test(a.name));if(clip)actions[name]=mixer.clipAction(clip);}
+ const root=new T.Group();scene.add(root);
+ let mixer,current,spine,packOffset,packRotation;const actions={},legs=[];
+ const fallback=new T.Group();root.add(fallback);
+ const body=new T.Mesh(new T.CapsuleGeometry(.22,.62,7,12),new T.MeshStandardMaterial({color:0x6a7765,roughness:.9}));body.position.y=1.03;fallback.add(body);
+ const head=new T.Mesh(new T.SphereGeometry(.15,16,12),new T.MeshStandardMaterial({color:0xb98e6c,roughness:.9}));head.position.y=1.67;fallback.add(head);
+ for(const x of [-.12,.12]){const leg=new T.Mesh(new T.CapsuleGeometry(.085,.48,5,8),new T.MeshStandardMaterial({color:0x39483c}));leg.position.set(x,.37,0);fallback.add(leg);legs.push(leg);}
+ const pack=new T.Group();pack.position.set(0,1.21,-.2);root.add(pack);
+ const fabric=new T.MeshStandardMaterial({color:0xa49b7b,map:canvasFabric(),roughness:.96,bumpMap:null}),leather=new T.MeshStandardMaterial({color:0x3d3b2e,roughness:.8});
+ const bag=new T.Mesh(new RoundedBoxGeometry(.30,.38,.17,3,.045),fabric);pack.add(bag);
+ const pocket=new T.Mesh(new RoundedBoxGeometry(.24,.16,.045,3,.018),fabric.clone());pocket.material.color.set(0x89866e);pocket.position.set(0,-.065,-.1);pack.add(pocket);
+ for(const x of [-.105,.105]){
+  const curve=new T.CatmullRomCurve3([new T.Vector3(x,.12,-.08),new T.Vector3(x,.25,.03),new T.Vector3(x,.17,.23),new T.Vector3(x,-.06,.27),new T.Vector3(x,-.19,.1),new T.Vector3(x,-.13,-.07)]);
+  pack.add(new T.Mesh(new T.TubeGeometry(curve,16,.012,5,false),leather));
+  const buckle=new T.Mesh(new RoundedBoxGeometry(.033,.047,.014,2,.004),new T.MeshStandardMaterial({color:0x797565,metalness:.6,roughness:.4}));buckle.position.set(x,-.03,-.13);pack.add(buckle);
+ }
+ const zip=new T.Mesh(new T.BoxGeometry(.21,.008,.009),leather);zip.position.set(0,.015,-.127);pack.add(zip);
+ try{
+  const manifest=await (await fetch('./models/manifest.json')).json();
+  const gltf=await new GLTFLoader().loadAsync(manifest.character),model=gltf.scene;
+  const bounds=new T.Box3().setFromObject(model),size=bounds.getSize(new T.Vector3()),scale=1.8/size.y;
+  model.scale.setScalar(scale);model.position.y=-bounds.min.y*scale;
+  model.traverse(o=>{if(!o.isMesh)return;o.castShadow=o.receiveShadow=true;
+   const prepare=m=>{const material=m.clone();material.color.multiply(new T.Color(0xe6e5dc));material.roughness=Math.max(.65,material.roughness);material.metalness=0;return material;};
+   o.material=Array.isArray(o.material)?o.material.map(prepare):prepare(o.material);
+  });
+  fallback.visible=false;root.add(model);mixer=new T.AnimationMixer(model);
+  for(const [name,pattern]of Object.entries({idle:/^Idle_Loop$|^Idle$/i,walk:/^Walk_Loop$|^Walk$/i,run:/^Jog_Fwd_Loop$|^Run$/i})){
+   const clip=manifest.animations?.[name]?T.AnimationClip.parse(await (await fetch(manifest.animations[name])).json()):gltf.animations.find(a=>manifest.clipNames?.[name]?a.name===manifest.clipNames[name]:pattern.test(a.name));
+   if(clip)actions[name]=mixer.clipAction(clip);
+  }
   if(actions.idle){current=actions.idle;current.play();mixer.update(.05);}
- }catch(e){console.warn('Using the authored explorer.',e.message);}
- root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.material.transparent=true;o.userData.noPick=true;}});
- return {root,update(dt,speed,heading,visible,animate){root.visible=visible;root.rotation.y+=Math.atan2(Math.sin(heading-root.rotation.y),Math.cos(heading-root.rotation.y))*(1-Math.exp(-14*dt));const mode=speed>.2?(speed>3.2?'run':'walk'):'idle';if(mixer){const action=actions[mode]||actions.idle;if(action&&action!==current){current?.fadeOut(.2);action.reset().fadeIn(.2).play();current=action;}mixer.update(animate?dt:0);}else legs.forEach((l,i)=>l.rotation.x=animate&&speed>.2?Math.sin(performance.now()*.009+i*Math.PI)*.45:0);pack.position.y=1.18+(animate&&speed>.2?Math.sin(performance.now()*.01)*.012:0);},setOpacity(value){root.traverse(o=>{if(o.isMesh)o.material.opacity=value;});}};
+  spine=model.getObjectByName('mixamorigSpine2')||model.getObjectByName('DEF-spine002');
+  if(spine){root.updateMatrixWorld(true);packOffset=spine.worldToLocal(pack.getWorldPosition(new T.Vector3()));packRotation=spine.getWorldQuaternion(new T.Quaternion()).invert().multiply(root.getWorldQuaternion(new T.Quaternion()));}
+ }catch(error){console.warn('Using the authored explorer.',error.message);}
+ root.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.userData.noPick=true;const materials=Array.isArray(o.material)?o.material:[o.material];materials.forEach(m=>m.userData.originalTransparent=m.transparent);});
+ const bonePosition=new T.Vector3(),boneQuaternion=new T.Quaternion(),rootQuaternion=new T.Quaternion();
+ return {
+  root,
+  update(dt,speed,heading,visible,animate){
+   root.visible=visible;root.rotation.y+=Math.atan2(Math.sin(heading-root.rotation.y),Math.cos(heading-root.rotation.y))*(1-Math.exp(-12*dt));
+   const mode=speed>.2?(speed>3.2?'run':'walk'):'idle';
+   if(mixer){const action=actions[mode]||actions.idle;if(action&&action!==current){current?.fadeOut(.24);action.reset().fadeIn(.24).play();current=action;}
+    if(current)current.setEffectiveTimeScale(mode==='walk'?T.MathUtils.clamp(speed/1.8,.7,1.5):mode==='run'?T.MathUtils.clamp(speed/3.8,.8,1.3):1);
+    mixer.update(animate?dt:0);
+   }else legs.forEach((l,i)=>l.rotation.x=animate&&speed>.2?Math.sin(performance.now()*.009+i*Math.PI)*.4:0);
+   if(spine){root.updateMatrixWorld(true);bonePosition.copy(packOffset);spine.localToWorld(bonePosition);root.worldToLocal(bonePosition);pack.position.copy(bonePosition);spine.getWorldQuaternion(boneQuaternion);root.getWorldQuaternion(rootQuaternion).invert();pack.quaternion.copy(rootQuaternion.multiply(boneQuaternion).multiply(packRotation));}
+  },
+  setOpacity(value){root.traverse(o=>{if(!o.isMesh)return;for(const material of Array.isArray(o.material)?o.material:[o.material]){const transparent=material.userData.originalTransparent||value<1;if(material.transparent!==transparent){material.transparent=transparent;material.needsUpdate=true;}material.opacity=value;}});}
+ };
 }

@@ -4,5 +4,10 @@
     "./models/nature/BirchTree_2.gltf"
   ],
   "bush": "./models/nature/Bush_Small.gltf",
-  "character": "./models/explorer.glb"
+  "character": "./models/human/remy/remy.glb",
+  "clipNames": {"idle":"mixamo.com"},
+  "animations": {
+    "walk": "./models/human/remy/walk.json",
+    "run": "./models/human/remy/run.json"
+  }
 }

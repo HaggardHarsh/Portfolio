@@ -1,0 +1,31 @@
+{
+  "wood": {
+    "color": "./materials/wood-color.jpg",
+    "normal": "./materials/wood-normal.jpg",
+    "roughness": "./materials/wood-roughness.jpg",
+    "ao": "./materials/wood-ao.jpg"
+  },
+  "ground": {
+    "color": "./materials/ground-color.jpg",
+    "normal": "./materials/ground-normal.jpg",
+    "roughness": "./materials/ground-roughness.jpg",
+    "ao": "./materials/ground-ao.jpg"
+  },
+  "roof": {
+    "color": "./materials/roof-color.jpg",
+    "normal": "./materials/roof-normal.jpg",
+    "roughness": "./materials/roof-roughness.jpg",
+    "ao": "./materials/roof-ao.jpg"
+  },
+  "rock": {
+    "color": "./materials/rock-color.jpg",
+    "normal": "./materials/rock-normal.jpg",
+    "roughness": "./materials/rock-roughness.jpg",
+    "ao": "./materials/rock-ao.jpg"
+  },
+  "path": {
+    "color": "./materials/path-color.jpg",
+    "normal": "./materials/path-normal.jpg",
+    "roughness": "./materials/path-roughness.jpg"
+  }
+}
