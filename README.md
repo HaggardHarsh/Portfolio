@@ -1,24 +1,25 @@
-# SIDEQUEST
+# The Woodland Cabin's village portfolio
 
-An ASCII portfolio prototype: explore a procedurally drawn text island, visit four portfolio locations, earn discovery XP, find two secrets, and use a working command line. Plain HTML, CSS, JavaScript, and Canvas. No build step.
+Edition 05 replaces the monochrome ASCII scene with an authored daylight village. Four destinations introduce the-builder, selected projects, technologies, and his GitHub profile. Keyboard movement and click-to-walk share collision geometry with the visible buildings. On phones the camera follows the visitor; the Walk to controls select destinations outside the viewport.
 
 ## Run
 
-`npm start` serves `dist/` at http://localhost:4173. `npm test` checks discovery awards, saved-state validation, movement, reachability, and terminal commands.
+`npm start` serves the static application at http://localhost:4173. No runtime dependencies or build step are needed. `npm install` installs the browser QA development dependency.
 
-## Customize
+`npm test` runs 22 movement, navigation, migration, camera, and content checks. `npm run test:browser` requires a Playwright Chromium installation (`npx playwright install chromium`) or `SIDEQUEST_BROWSER_PATH` pointing to an existing Chromium executable. Start the preview server first; `SIDEQUEST_QA_URL` overrides its default address.
 
-- `dist/app.js`: the four portfolio sections, sample projects, contact details, and terminal interactions.
-- `dist/style.css`: green and amber palettes, responsive layouts, dialog styles.
-- `dist/game.js`: island boundary, locations, movement, progress, and terminal parser.
-- `dist/index.html`: page copy, navigation, map landmarks, quest log.
+`python scripts/generate-village.py` regenerates the shared scene definition and collision mask (Pillow required). `python scripts/package-preview.py` validates the HTML and creates `artifacts/preview.html`, a browser-openable standalone preview, and `artifacts/sidequest-village.zip`, a deployable static package.
 
-Portfolio content is illustrative, with no invented personal claims. Replace the example email, projects, toolkit, and résumé template before a real launch. The prototype deliberately uses `noindex` until the personal content is ready. Exploration is stored only in the visitor's browser; it works when browser storage is unavailable. The only external asset request is optional Google Fonts; system monospace fonts provide the fallback.
+## Content and art
 
-## Controls
+`dist/content.js` holds verified project summaries, source links, and skills evidence. `dist/index.html` includes a no-JavaScript reading view. Keep its fallback text in sync when content changes. The current contact destination links to GitHub; no email address, formal job title, employment history, or résumé has been supplied. Those fields are omitted rather than fabricated.
 
-Focus the world, then use WASD or arrow keys to move; E or Enter visits a nearby place. Clicking any place or quest opens it directly. Mobile movement controls are below the map. The terminal supports `help`, `about`, `projects`, `skills`, `contact`, `ls`, `whoami`, `map`, `theme`, `sound`, `clear`, and `cat README.md`. History uses Up/Down; unique command prefixes complete with Tab. Reduced-motion preferences stop ambient animation and walking animations.
+`dist/world-renderer.js` draws and caches the code-authored scenery. `dist/world-scene.js` and `dist/world-map.js` are generated together. `dist/camera.js` owns camera coordinate conversions. Buildings can be selected through their artwork, their labels, or the mobile walking controls. Header navigation opens content directly.
 
-Two secrets: investigate the map's `?`, or run `sudo make coffee`.
+Saved discoveries and sound preferences remain in the visitor's browser. Edition 04 positions reset to the new safe spawn. Old monochrome settings are no longer exposed. There are no third-party runtime scripts or web fonts.
 
-The Site identity is retained in `.openai/hosting.json` for future revisions.
+The old local edition and hosting identity were preserved under ignored `artifacts/backups/`. The old Sites project could not be found in the connected account, so the user-authorized replacement Site identity is recorded in `.openai/hosting.json`.
+
+## Sources
+
+Project copy and screenshots were checked against the public READMEs of [SinceLastTime](https://github.com/portfolio-owner/SinceLastTime), [Project Blob](https://github.com/portfolio-owner/ProjectBlob), and [HumanResumeFilter](https://github.com/portfolio-owner/HumanResumeFilter). The screenshots are repository assets, not fabricated project mockups. Personal name supplied by the owner. No performance or project outcome metrics are claimed.

@@ -1,0 +1,3 @@
+# Sidequest village
+Reading this as an interactive portfolio for recruiters and employers, in a warm daylight pixel-village style. ENERGY 3 / RHYTHM 2 / MOTION 2.
+The world is the focal point. Solid grass, blue water, broad sand paths and distinct roof shapes make destinations readable. Cream HTML panels and system sans-serif preserve reading comfort. Teal is the interface accent; scene colours denote materials. Shadows establish objects on the ground. Four building silhouettes and a coral visitor repeat the village identity. Motion communicates travel and arrival; scenery is still. Text is independent of scene resolution. Sound is optional. No fictional personal claims.
