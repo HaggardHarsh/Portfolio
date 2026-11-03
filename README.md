@@ -1,25 +1,29 @@
-# The Woodland Cabin's village portfolio
+# The Woodland Cabin · The Woodland Cabin
 
-Edition 05 replaces the monochrome ASCII scene with an authored daylight village. Four destinations introduce the-builder, selected projects, technologies, and his GitHub profile. Keyboard movement and click-to-walk share collision geometry with the visible buildings. On phones the camera follows the visitor; the Walk to controls select destinations outside the viewport.
+A third-person 3D forest portfolio with a first-person camera and a coloured ASCII rendering mode. Walk through the woods to one cabin. The workbench opens Projects, the diary opens About, the calling card opens Contact, and the tool wall opens Skills.
 
-## Run
+## Development
 
-`npm start` serves the static application at http://localhost:4173. No runtime dependencies or build step are needed. `npm install` installs the browser QA development dependency.
+Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build` creates the static deployment in `dist/`. Three.js powers the scene; Vite packages local models, scripts, styles and project images. No external runtime asset host, account, database or API is required.
 
-`npm test` runs 22 movement, navigation, migration, camera, and content checks. `npm run test:browser` requires a Playwright Chromium installation (`npx playwright install chromium`) or `SIDEQUEST_BROWSER_PATH` pointing to an existing Chromium executable. Start the preview server first; `SIDEQUEST_QA_URL` overrides its default address.
+`npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL.
 
-`python scripts/generate-village.py` regenerates the shared scene definition and collision mask (Pillow required). `python scripts/package-preview.py` validates the HTML and creates `artifacts/preview.html`, a browser-openable standalone preview, and `artifacts/sidequest-village.zip`, a deployable static package.
+## Controls
 
-## Content and art
+Enter the woods, then use WASD to walk and Shift to run. Mouse look uses pointer lock after a deliberate user action; Escape releases the cursor. With the cursor released, drag to look and click reachable ground to walk there. E interacts with a nearby door or portfolio object. V switches cameras. M opens the interactive map. The mobile joystick moves; drag the scene to look and use Interact/View buttons. Header links open content directly.
 
-`dist/content.js` holds verified project summaries, source links, and skills evidence. `dist/index.html` includes a no-JavaScript reading view. Keep its fallback text in sync when content changes. Contact includes the owner's supplied email and LinkedIn plus GitHub. No formal job title, employment history, or résumé has been supplied; those fields are omitted rather than fabricated.
+The cabin door is an explicit interaction. Choose Cabin porch on the map for automatic walking, open the door, then choose any interior object. Manual movement cancels the route. Opening a dialog releases the mouse and pauses movement; closing it leaves the cursor free until the visitor selects Mouse look.
 
-`dist/world-renderer.js` draws and caches the code-authored scenery. `dist/world-scene.js` and `dist/world-map.js` are generated together. `dist/camera.js` owns camera coordinate conversions. Buildings can be selected through their artwork, their labels, or the mobile walking controls. Header navigation opens content directly.
+Rendering, camera, audio, ambient-motion and discovery preferences are stored locally. Position starts at the forest trail each visit. Normal 3D is the default. Sound starts off. Reduced-motion preferences turn off ambient motion by default and disable walking animations and eased camera following. Low/Balanced/High quality controls affect render resolution, shadows and the number of detailed trees; distant silhouettes preserve forest density.
 
-Saved discoveries and sound preferences remain in the visitor's browser. Edition 04 positions reset to the new safe spawn. Old monochrome settings are no longer exposed. There are no third-party runtime scripts or web fonts.
+## Source layout
 
-The old local edition and hosting identity were preserved under ignored `artifacts/backups/`. The old Sites project could not be found in the connected account, so the user-authorized replacement Site identity is recorded in `.openai/hosting.json`.
+`src/world.js` is the shared collision/navigation/interaction manifest. `src/scene.js` authors the cabin and furniture and batches local forest models. `src/main.js` coordinates fixed-step movement, cameras, doors, pointer/touch controls, dialogs and state. The avatar, GPU ASCII pass, minimap and optional audio are separate modules. `src/content.js` contains the verified portfolio content. `index.html` includes the no-JavaScript reading view.
 
-## Sources
+## Assets and evidence
 
-Project copy and screenshots were checked against the public READMEs of [SinceLastTime](https://github.com/portfolio-owner/SinceLastTime), [Project Blob](https://github.com/portfolio-owner/ProjectBlob), and [HumanResumeFilter](https://github.com/portfolio-owner/HumanResumeFilter). The screenshots are repository assets, not fabricated project mockups. Personal name supplied by the owner. No performance or project outcome metrics are claimed.
+The selected nature models and animated explorer are CC0 assets from Quaternius. See `public/models/ASSETS.md` and `public/models/CC0.txt` for exact sources. The cabin, props, glyph atlas, material textures and environmental effects are authored in code.
+
+Project copy and images are grounded in the-builder's public repositories: [SinceLastTime](https://github.com/portfolio-owner/SinceLastTime), [Project Blob](https://github.com/portfolio-owner/ProjectBlob), and [HumanResumeFilter](https://github.com/portfolio-owner/HumanResumeFilter). Name, email and LinkedIn were supplied by the owner. No employment history, résumé, project ownership split, or outcome metrics have been invented.
+
+The previous village edition is backed up in ignored `artifacts/backups/edition-05/` and remains recoverable in Git. The existing public Site identity is preserved in `.openai/hosting.json`.

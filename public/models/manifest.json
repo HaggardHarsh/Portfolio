@@ -1,0 +1,8 @@
+{
+  "trees": [
+    "./models/nature/BirchTree_1.gltf",
+    "./models/nature/BirchTree_2.gltf"
+  ],
+  "bush": "./models/nature/Bush_Small.gltf",
+  "character": "./models/explorer.glb"
+}
