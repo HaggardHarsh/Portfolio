@@ -12,7 +12,7 @@ Edition 05 replaces the monochrome ASCII scene with an authored daylight village
 
 ## Content and art
 
-`dist/content.js` holds verified project summaries, source links, and skills evidence. `dist/index.html` includes a no-JavaScript reading view. Keep its fallback text in sync when content changes. The current contact destination links to GitHub; no email address, formal job title, employment history, or résumé has been supplied. Those fields are omitted rather than fabricated.
+`dist/content.js` holds verified project summaries, source links, and skills evidence. `dist/index.html` includes a no-JavaScript reading view. Keep its fallback text in sync when content changes. Contact includes the owner's supplied email and LinkedIn plus GitHub. No formal job title, employment history, or résumé has been supplied; those fields are omitted rather than fabricated.
 
 `dist/world-renderer.js` draws and caches the code-authored scenery. `dist/world-scene.js` and `dist/world-map.js` are generated together. `dist/camera.js` owns camera coordinate conversions. Buildings can be selected through their artwork, their labels, or the mobile walking controls. Header navigation opens content directly.
 
