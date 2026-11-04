@@ -1,6 +1,6 @@
 export const defaultSiteUrl='https://portfolio.example';
-export const siteTitle='The Woodland Cabin · The Woodland Cabin';
-export const siteDescription='The Woodland Cabin’s projects, notes, and tools, inside an interactive woodland cabin. Read the portfolio directly or explore in 3D and ASCII.';
+export const siteTitle='The Woodland Cabin';
+export const siteDescription='Projects, notes, and tools inside an interactive woodland cabin. Read the archive directly or explore in 3D and ASCII.';
 
 export function normalizeSiteUrl(value=defaultSiteUrl){
  const url=new URL(value);

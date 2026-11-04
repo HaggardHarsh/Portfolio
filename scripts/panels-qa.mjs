@@ -34,9 +34,9 @@ try {
   }
   await page.screenshot({path:`artifacts/archive-${id}.png`});
  }
- assert.equal(await page.locator('.card-email').getAttribute('href'),'mailto:removed@example.invalid');
- assert.equal(await page.locator('.correspondence-link').nth(0).getAttribute('href'),'https://github.com/portfolio-owner');
- assert.equal(await page.locator('.correspondence-link').nth(1).getAttribute('href'),'https://example.invalid/profile');
+ assert.equal(await page.locator('.card-email').count(),0);
+ assert.equal(await page.locator('.correspondence-link').count(),0);
+ assert.match(await page.locator('.privacy-note').textContent(),/not published/);
  await page.locator('#nextChapter').click();
  assert.equal(await chapter('reading').getAttribute('aria-current'),'page');
  await page.goBack();
@@ -79,13 +79,13 @@ try {
  assert.ok(await page.locator('#mapDialog').isVisible());
  await page.keyboard.press('Escape');
  // A failed preview must leave a readable state, not broken alt text.
- await page.route('**/assets/since-last-time.png',route=>route.abort());
+ await page.route('**/assets/project-blob.png',route=>route.abort());
  await page.locator('.header [data-content="projects"]').click();
  await page.waitForSelector('.image-fallback:not([hidden])');
  assert.equal(await page.locator('#contentBody img').first().isVisible(),false);
- assert.match(await page.locator('.image-fallback').first().textContent(),/repository/);
+ assert.match(await page.locator('.image-fallback').first().textContent(),/notes/);
  assert.deepEqual(errors,[]);
- console.log('PASS: archive chapters, overview/next/back navigation, both project images, build notes, real contacts, 320/390/768/1280 layouts, sticky close, keyboard containment/return, map/guide, failed-image state; no runtime errors.');
+ console.log('PASS: archive chapters, overview/next/back navigation, project preview, build notes, privacy notice, 320/390/768/1280 layouts, sticky close, keyboard containment/return, map/guide, failed-image state; no runtime errors.');
 } finally {
  await browser.close();
 }

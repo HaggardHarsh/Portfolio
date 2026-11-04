@@ -6,7 +6,7 @@ A third-person 3D forest portfolio with a first-person camera and a coloured ASC
 
 Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build:static` creates a static deployment in `dist/`. `npm run build` packages those same assets into a single-file Sites Worker at `dist/server/index.js`, which sends security headers directly. Three.js powers the scene; Vite packages local models, scripts, styles and project images. No external runtime asset host, account, database or API is required.
 
-The source repository is https://github.com/portfolio-owner/Portfolio. The primary domain is `https://portfolio.example`; its DNS and certificate must be verified before announcing it. [DNS-SETUP.md](DNS-SETUP.md) contains the exact Namify records and dashboard instructions. The existing Sites URL remains available during setup.
+The public demo omits personal contact details, profile links, and account-specific domain setup data. [DNS-SETUP.md](DNS-SETUP.md) describes deployment configuration without identifying the owner.
 
 `npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
@@ -36,12 +36,10 @@ Rendering, camera, audio, ambient-motion and discovery preferences are stored lo
 
 ## Assets and evidence
 
-The nature models are CC0 assets from Quaternius. The realistically proportioned human visitor is Adobe Mixamo Remy, with a native idle and retargeted walking/running clips, used under the Mixamo licence. See `public/models/ASSETS.md` and `public/models/HUMAN_ASSET.md` for exact sources and terms. This generic visitor is not a portrait of the-builder.
+The nature models are CC0 assets from Quaternius. The realistically proportioned human visitor is Adobe Mixamo Remy, with a native idle and retargeted walking/running clips, used under the Mixamo licence. See `public/models/ASSETS.md` and `public/models/HUMAN_ASSET.md` for exact sources and terms. This generic visitor is not a portrait of the builder.
 
 Weathered wood, slate, mossy rock, forest floor and dirt-path PBR maps are CC0 scans from Poly Haven. Their colour, normal, roughness and ambient-occlusion maps are bundled locally; `public/materials/ASSETS.md` records sources and optimization. `src/materials.js` loads these surfaces and applies metre-scaled UVs. The cabin geometry, props, backpack, glyph atlas, cloth weave and environmental effects are authored in code.
 
 The backpack follows the upper-body bone rather than floating independently of the walking rig. Detailed nearby trees transition to renderer-captured images of the same models in the distance, replacing the previous geometric canopy placeholders. Grass uses fine curved blades and the trail keeps large rocks clear of its walking corridor.
 
-Project copy and images are grounded in the-builder's public repositories: [SinceLastTime](https://github.com/portfolio-owner/SinceLastTime), [Project Blob](https://github.com/portfolio-owner/ProjectBlob), and [HumanResumeFilter](https://github.com/portfolio-owner/HumanResumeFilter). Name, email and LinkedIn were supplied by the owner. No employment history, résumé, project ownership split, or outcome metrics have been invented.
-
-The previous village and initial woodland editions are backed up in ignored `artifacts/backups/` and remain recoverable in Git. The existing public Site identity is preserved in `.openai/hosting.json`.
+The examples describe a community board, a desktop companion, and a retrieval application. Personal identifiers, profile links, and images containing user names are omitted from this public build.

@@ -34,7 +34,7 @@ The archive checks live in scripts/panels-qa.mjs (`npm run test:panels`), with s
 
 ## Retained woodland refinement · Edition 07
 
-The character is now a textured, realistically proportioned adult male visitor (Mixamo Remy), with visible skin, face, hair, casual clothes and shoes. Native idle and retargeted walk/run replace the neutral mannequin's locomotion. The cloth backpack, straps, pocket, buckles and zip follow the upper-spine bone. This generic avatar is not an assumed likeness of the-builder.
+The character is now a textured, realistically proportioned adult male visitor (Mixamo Remy), with visible skin, face, hair, casual clothes and shoes. Native idle and retargeted walk/run replace the neutral mannequin's locomotion. The cloth backpack, straps, pocket, buckles and zip follow the upper-spine bone. This generic avatar is not an assumed likeness of the builder.
 
 The cabin uses scanned weathered wood and slate with colour, OpenGL normal, roughness and ambient-occlusion maps. Metre-scaled UVs preserve grain scale across boards and beams. Timber ceiling boards, wood-clad gables, roof fascia, stone footings and a stone chimney improve the building's construction detail. The woodland has scanned leaf litter, a worn dirt path with soft edges, mossy stone, fine curved grass and more neutral daylight. Distant forest instances use renderer captures of the actual tree models instead of geometric canopy placeholders.
 

@@ -1,6 +1,6 @@
 # Security and publishing
 
-Report a suspected vulnerability privately to removed@example.invalid. Include the affected URL, reproduction steps and likely impact. Do not put credentials or personal data in a public issue.
+Do not post credentials or personal data in a public issue. This public demo does not publish personal contact information.
 
 This portfolio serves static files through a small header-enforcing Worker on Sites. It has no account system, uploads, contact-form API or database. Contact links open email, GitHub or LinkedIn. Local storage contains only rendering/camera/sound/motion preferences and visited chapter identifiers. Client-side files are public; keep credentials out of `src/`, `public/`, environment variables exposed to Vite, and Git history.
 

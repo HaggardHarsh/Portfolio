@@ -1,6 +1,6 @@
 # Human visitor: Remy
 
-Selected model: Adobe Mixamo Remy, a realistically proportioned adult male visitor with short hair, visible face, a black casual T-shirt, grey hiking shorts and trainers. This is a generic visitor avatar, not a claimed likeness of the-builder.
+Selected model: Adobe Mixamo Remy, a realistically proportioned adult male visitor with short hair, visible face, a black casual T-shirt, grey hiking shorts and trainers. This is a generic visitor avatar, not a claimed likeness of the builder.
 
 ## Source and licence
 
