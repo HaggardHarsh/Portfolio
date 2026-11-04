@@ -2,13 +2,15 @@
 
 Report a suspected vulnerability privately to removed@example.invalid. Include the affected URL, reproduction steps and likely impact. Do not put credentials or personal data in a public issue.
 
-This portfolio serves static files. It has no account system, uploads, contact-form API or database. Contact links open email, GitHub or LinkedIn. Local storage contains only rendering/camera/sound/motion preferences and visited chapter identifiers. Client-side files are public; keep credentials out of `src/`, `public/`, environment variables exposed to Vite, and Git history.
+This portfolio serves static files through a small header-enforcing Worker on Sites. It has no account system, uploads, contact-form API or database. Contact links open email, GitHub or LinkedIn. Local storage contains only rendering/camera/sound/motion preferences and visited chapter identifiers. Client-side files are public; keep credentials out of `src/`, `public/`, environment variables exposed to Vite, and Git history.
 
 ## Browser policy
 
 `config/launch.mjs` defines the policy. Production HTML includes a CSP meta fallback. Scripts must come from the same origin; inline script handlers and eval are blocked. Images allow the local assets, canvas data and embedded-model blobs. Fetch allows same-origin assets and blob-backed model textures. Inline style attributes support the joystick and scene controls; inline script execution remains blocked. The no-JavaScript stylesheet is an external file.
 
-The build emits `_headers` for compatible static hosts. `vercel.json` supplies equivalent rules on Vercel. The production preview applies the same response headers for browser checks. These include CSP, MIME-sniffing protection, a referrer policy, feature permissions and HSTS. HTML meta policies cannot implement MIME protection, HSTS, Permissions Policy or CSP frame-ancestors: verify response headers on the actual host after publication. A host that ignores `_headers` needs its own header configuration. The limited ChatGPT framing allowance preserves the Site embed.
+The client build emits `_headers` for compatible static hosts. `vercel.json` supplies equivalent rules on Vercel. Sites did not apply `_headers` on its static response path, so the Sites build now generates a Worker that sets the headers on every response. These include CSP, MIME-sniffing protection, a referrer policy, feature permissions and HSTS. The local Worker preview checks the actual response code, not just an HTML policy fallback. HTML meta policies cannot implement MIME protection, HSTS, Permissions Policy or CSP frame-ancestors: verify response headers on the actual host after publication. The limited ChatGPT framing allowance preserves the Site embed.
+
+The generated Worker contains a fixed asset table. It never reads filesystem paths from user input, executes uploaded code, accepts writes or forwards arbitrary URLs. Unknown paths return 404; methods other than GET/HEAD return 405. ETags enable conditional requests, and only fingerprinted script/style names receive immutable caching. The build checks the compressed artifact size before replacing its output.
 
 Only fingerprinted JavaScript and CSS receive immutable caching rules. Fixed-name model files and images must be revalidated or versioned when replaced.
 

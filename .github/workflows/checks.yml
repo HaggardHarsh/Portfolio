@@ -2,7 +2,9 @@ name: Portfolio checks
 on:
   push:
     branches: [main]
+    paths-ignore: ['**/*.md']
   pull_request:
+    paths-ignore: ['**/*.md']
 permissions:
   contents: read
 concurrency:
@@ -28,7 +30,7 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=high
       - run: npm test
-      - run: npm run build
+      - run: npm run build:static
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Check production security and browser compatibility
         env:
@@ -43,3 +45,17 @@ jobs:
             sleep 1
           done
           SIDEQUEST_QA_URL=http://127.0.0.1:4175 npm run test:launch
+      - run: npm run build
+      - name: Check the production Worker response path
+        env:
+          SIDEQUEST_BROWSER: ${{ matrix.browser }}
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          npm run preview:worker > /tmp/portfolio-worker.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4176/ > /dev/null; then break; fi
+            sleep 1
+          done
+          SIDEQUEST_QA_URL=http://127.0.0.1:4176 npm run test:launch
