@@ -4,19 +4,19 @@ export async function loadMaterials(renderer){
  const response=await fetch('./materials/manifest.json');
  if(!response.ok)throw new Error('Material library could not load');
  const manifest=await response.json(),loader=new T.TextureLoader(),out={};
- for(const [name,files]of Object.entries(manifest)){
-  if(!files.color)continue;
+ await Promise.all(Object.entries(manifest).map(async([name,files])=>{
+  if(!files.color)return;
   const maps=await Promise.all(['color','normal','roughness','ao'].map(async kind=>{
    if(!files[kind])return null;
    const texture=await loader.loadAsync(files[kind]);
    texture.wrapS=texture.wrapT=T.RepeatWrapping;
-   texture.anisotropy=Math.min(8,renderer?.capabilities.getMaxAnisotropy()||4);
+   texture.anisotropy=Math.min(4,renderer?.capabilities.getMaxAnisotropy()||4);
    if(kind==='color')texture.colorSpace=T.SRGBColorSpace;
    return texture;
   }));
   const material=new T.MeshStandardMaterial({map:maps[0],normalMap:maps[1],roughnessMap:maps[2],aoMap:maps[3],roughness:1,aoMapIntensity:name==='ground'?.6:.45,normalScale:new T.Vector2(name==='rock'?.8:.45,name==='rock'?.8:.45)});
   material.userData.surface=name;out[name]=material;
- }
+ }));
  return out;
 }
 

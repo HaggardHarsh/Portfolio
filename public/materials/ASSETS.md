@@ -17,3 +17,5 @@ For web delivery, diffuse maps remain 1024 × 1024 at JPEG quality 88 and normal
 `manifest.json` maps application material names to relative same-origin paths. Material UV scale should follow the physical tile coverage above rather than stretching one full texture over each mesh.
 
 The path set uses the Brown Mud 02 scan, with compact soil, small stones and sticks rather than the forest floor's heavier leaf litter. Its diffuse, OpenGL normal and roughness maps were downloaded at 1K and resized to 512 × 512 with Lanczos; JPEG quality 88 is used for colour/roughness and 93 with 4:4:4 sampling for normal. This additional set is about 479 KB and has no AO file.
+
+Edition 09 further reduces delivery cost: diffuse maps retain their existing dimensions and use JPEG quality 84; OpenGL normals are capped at 512px with 4:4:4 sampling and quality 88; scalar roughness/AO maps are capped at 256px and quality 82. Map orientation, material attribution and physical UV scale are unchanged. Together with a 1024px, quality-82 version of the existing birch bark texture, this reduces these texture files from 6,172,388 to 2,677,074 bytes. Earlier source versions remain in Git.

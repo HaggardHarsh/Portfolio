@@ -1,0 +1,6 @@
+#scene{background:#253d32 url('/assets/woodland-preview.webp') center/cover no-repeat}
+#loading{inset:auto;top:164px;left:38px;max-width:calc(100vw - 76px);min-height:50px;flex-direction:row;gap:12px;padding:8px 14px;z-index:5;pointer-events:none;background:#18392ef2;border:1px solid #bca77e77;border-radius:3px}
+#loading .loading-icon{font-size:25px}
+#loading p{font-size:11px;line-height:1.5;margin:0;color:#eee3c9}
+#loading .loading-line{width:24px;flex-shrink:0}
+@media(max-width:700px){#loading{top:164px;left:20px;max-width:calc(100vw - 40px);padding:8px 12px}}

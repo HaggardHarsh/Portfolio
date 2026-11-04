@@ -2,7 +2,7 @@ import * as T from 'three';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {treeLayout,TRAIL,POINTS} from './world.js';
+import {treeLayout,rockLayout,TRAIL,FLOORS} from './world.js';
 import {loadMaterials,boxUV} from './materials.js';
 const palette={wood:0x795537,timber:0x493c2c,plank:0xa27a4d,cream:0xd4c19a,metal:0x343f3d,leaf:0x456142};
 function texture(kind){const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let seed=12;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};x.fillStyle=kind==='ground'?'#5d6545':'#a08259';x.fillRect(0,0,256,256);for(let i=0;i<1300;i++){x.fillStyle=kind==='ground'?`rgba(${rnd()>.5?'30,49,29':'160,153,92'},${rnd()*.15})`:`rgba(44,29,18,${rnd()*.22})`;x.fillRect(rnd()*256,rnd()*256,kind==='ground'?rnd()*6:rnd()*70,kind==='ground'?rnd()*5:1);}if(kind!=='ground'){x.fillStyle='#433626';for(let y=0;y<256;y+=64)x.fillRect(0,y,256,2);}const tex=new T.CanvasTexture(c);tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.colorSpace=T.SRGBColorSpace;return tex;}
@@ -14,6 +14,11 @@ function captureTree(asset,renderer){
  return {texture:target.texture,span,height:size.y,centerY:center.y};
 }
 export async function createWorld(scene,onProgress,renderer){
+ const modelAssets=fetch('./models/manifest.json').then(r=>r.json()).then(async manifest=>{
+  const loader=new GLTFLoader();
+  const [trees,bush]=await Promise.all([Promise.all((manifest.trees||[]).map(url=>loader.loadAsync(url))),manifest.bush?loader.loadAsync(manifest.bush):null]);
+  return {trees,bush};
+ }).catch(error=>{console.warn('Using the authored forest.',error.message);return {trees:[],bush:null};});
  const mats={};for(const [k,color]of Object.entries(palette))mats[k]=new T.MeshStandardMaterial({color,roughness:.88});
  let surfaces={};try{onProgress('Weathering the timber…');surfaces=await loadMaterials(renderer);}catch(error){console.warn('Using authored material textures.',error.message);}
  const woodTex=texture('wood');mats.wood.map=woodTex;mats.plank.map=woodTex;
@@ -32,7 +37,7 @@ export async function createWorld(scene,onProgress,renderer){
  const pathGeo=new T.BufferGeometry();pathGeo.setAttribute('position',new T.Float32BufferAttribute(verts,3));pathGeo.setAttribute('uv',new T.Float32BufferAttribute(pathUV,2));pathGeo.setAttribute('uv1',new T.Float32BufferAttribute(pathUV,2));pathGeo.setAttribute('color',new T.Float32BufferAttribute(colors,4));pathGeo.setIndex(indices);pathGeo.computeVertexNormals();const pathMat=(surfaces.path||groundMat).clone();pathMat.color.set(0xc9bba5);pathMat.vertexColors=true;pathMat.transparent=true;pathMat.opacity=.95;pathMat.depthWrite=false;pathMat.side=T.DoubleSide;add(pathGeo,pathMat,0,0,0).castShadow=false;
  // Cabin shell, with actual window openings and a usable front doorway.
  box(0,.12,-20,12.5,.24,10.6,'timber');
- for(let i=0;i<24;i++)box(-5.8+i*.5,.265,-20,.48,.05,9.8,'plank');
+ for(let i=0;i<24;i++)box(-5.8+i*.5,FLOORS.cabin-.025,-20,.48,.05,9.8,'plank');
  for(let level=0;level<13;level++){
   const y=.4+level*.23;
   for(const side of [-1,1]){
@@ -52,13 +57,14 @@ export async function createWorld(scene,onProgress,renderer){
  box(0,5.62,-20,.25,.25,12.3,'timber');
  for(const z of [-24.6,-22,-19,-16]){box(0,3.2,z,12,.2,.2,'timber');for(const s of [-1,1]){const r=box(s*3,4.3,z,6.5,.18,.2,'timber');r.rotation.z=-s*.37;}}
  for(const s of [-1,1]){const x=s*6.03;box(x,1.95,-20,.03,1.15,3.8,glass);for(const z of [-22,-20,-18])box(x,1.95,z,.12,1.35,.12,'timber');for(const y of [1.3,1.95,2.6])box(x,y,-20,.15,.1,4.1,'timber');}
- box(0,.13,-13.4,5,.26,3,'plank');box(0,.07,-11.6,4,.14,.6,'wood');
+ box(0,FLOORS.porch/2,-13.4,5,FLOORS.porch,3,'plank');box(0,FLOORS.step/2,-11.6,4,FLOORS.step,.6,'wood');
+ box(0,FLOORS.cabin-.015,-15,2.5,.03,.4,'plank');
  for(const x of [-2.3,2.3]){box(x,1.65,-12.15,.18,3.2,.18,'timber');box(x,.95,-13.3,.12,.12,2.3,'timber');for(const z of [-13.8,-13.1,-12.4])box(x,.6,z,.07,.7,.07,'timber');}
  const porchroof=box(0,3.36,-13.4,5.8,.18,3.8,roofmat);porchroof.rotation.x=-.08;
  const porchCeiling=box(0,3.23,-13.4,5.65,.04,3.65,'plank');porchCeiling.rotation.x=-.08;
  if(surfaces.rock){for(const x of [-5.5,5.5])for(const z of [-24,-16])box(x,.13,z,.7,.28,.7,surfaces.rock,scene,.04);for(const x of [-2.2,2.2])box(x,.08,-12.4,.5,.16,.55,surfaces.rock,scene,.025);}
  const doorPivot=new T.Group();doorPivot.position.set(-1.23,.27,-15);scene.add(doorPivot);box(1.23,1.35,0,2.46,2.7,.13,'plank',doorPivot);for(const y of [.35,2.3])box(1.23,y,.08,2.2,.14,.12,'timber',doorPivot);const knob=cylinder(2.14,1.35,.18,.065,.065,.13,'metal',doorPivot);knob.rotation.x=Math.PI/2;
- function lantern(x,y,z){box(x,y,z,.27,.44,.27,'metal');box(x,y,z,.21,.3,.21,warm);cylinder(x,y+.3,z,.16,.2,.14,'metal');const light=new T.PointLight(0xffbc69,5,6,2);light.position.set(x,y,z);scene.add(light);}
+ function lantern(x,y,z){box(x,y,z,.27,.44,.27,'metal');box(x,y,z,.21,.3,.21,warm);cylinder(x,y+.3,z,.16,.2,.14,'metal');}
  lantern(-1.9,2.25,-14.65);lantern(2.5,2.35,-21);lantern(-4.6,2.3,-19.5);
  const insideLight=new T.PointLight(0xffdba2,26,13,1.6);insideLight.position.set(0,2.8,-20);scene.add(insideLight);
  // Furnishings are arranged around a clear circulation loop.
@@ -84,20 +90,15 @@ export async function createWorld(scene,onProgress,renderer){
  for(const y of [1.2,2]){box(3,y,-24.6,2,.12,.55,'wood');for(let i=0;i<5;i++)box(2.3+i*.22,y+.25,-24.6,.14,.4,.3,i%2?'cream':'timber');}
  box(3.8,.7,-22.7,.75,.12,.75,'wood');for(const dx of [-.28,.28])for(const dz of [-.28,.28])box(3.8+dx,.4,-22.7+dz,.07,.7,.07,'timber');box(3.8,1.1,-23,.75,.8,.08,'wood');
  const potmat=new T.MeshStandardMaterial({color:0x9c6546});cylinder(2,.55,-16,.3,.22,.6,potmat);for(let i=0;i<6;i++){const leaf=add(new T.SphereGeometry(.35,5,4),mats.leaf,2+Math.sin(i)*.25,1+i*.1,-16+Math.cos(i)*.25);leaf.scale.set(.5,1.6,.5);}
- const treeData=treeLayout(),foliage=[],treeMeshes=[],windUniforms=[],detailBatches=[],impostors=[];
+ const treeData=treeLayout(),windUniforms=[],detailBatches=[],impostors=[];
  let lodPosition={x:999,z:999},lodQuality='balanced',lodDirty=true;
- // Detailed authored trees serve as the offline fallback until local glTF assets load.
- for(const t of treeData){const group=new T.Group();group.position.set(t.x,0,t.z);group.rotation.y=t.rotation;scene.add(group);const trunk=cylinder(0,t.height*.4,0,t.radius*.65,t.radius*1.6,t.height*.8,'timber',group,7);for(let j=0;j<4;j++){const branch=cylinder(Math.sin(j*1.7)*.6,t.height*(.55+j*.07),Math.cos(j*1.7)*.6,.06,.15,2,'wood',group,5);branch.rotation.z=(j%2?1:-1)*.7;}
-  const leafMat=new T.MeshStandardMaterial({color:new T.Color().setHSL(.22+(t.type*.015),.2,.17+t.type*.025),roughness:1,flatShading:true});
-  for(let j=0;j<5;j++){const m=add(new T.IcosahedronGeometry(t.height*.23,1),leafMat,Math.sin(j*2.4)*1.25,t.height*.68+(j%3)*.7,Math.cos(j*2.4)*1.25,group);m.scale.set(1.1,.7,1);foliage.push(m);}treeMeshes.push(group);
- }
  let seed=91;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const grassGeo=new T.BufferGeometry(),bladeVertices=[],bladeIndices=[];
  for(let b=0;b<5;b++){const angle=b*2.4,height=.22+(b%3)*.07;for(let j=0;j<5;j++){const t=j/4,width=.013*(1-t),bend=t*t*.09,baseX=Math.sin(angle)*.04,baseZ=Math.cos(angle)*.04;for(const side of [-1,1])bladeVertices.push(baseX+Math.cos(angle)*width*side+Math.sin(angle)*bend,height*t,baseZ+Math.sin(angle)*width*side+Math.cos(angle)*bend);if(j<4){const k=b*10+j*2;bladeIndices.push(k,k+1,k+2,k+1,k+3,k+2);}}}
- grassGeo.setAttribute('position',new T.Float32BufferAttribute(bladeVertices,3));grassGeo.setIndex(bladeIndices);grassGeo.computeVertexNormals();const grassMat=new T.MeshStandardMaterial({color:0x788267,roughness:1,side:T.DoubleSide});const grass=new T.InstancedMesh(grassGeo,grassMat,2000),dummy=new T.Object3D(),trailSamples=curve.getPoints(60);
+ grassGeo.setAttribute('position',new T.Float32BufferAttribute(bladeVertices,3));grassGeo.setIndex(bladeIndices);grassGeo.computeVertexNormals();const grassMat=new T.MeshLambertMaterial({color:0x788267,side:T.DoubleSide});const grass=new T.InstancedMesh(grassGeo,grassMat,2000),dummy=new T.Object3D(),trailSamples=curve.getPoints(60);
  const grassWind={value:0};windUniforms.push(grassWind);grassMat.onBeforeCompile=shader=>{shader.uniforms.windTime=grassWind;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float windTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x+=sin(windTime*1.1+instanceMatrix[3].x)*.08*position.y*position.y;');};
  for(let i=0;i<2000;i++){const x=(rnd()-.5)*67,z=(rnd()-.5)*67;dummy.position.set(x,0,z);if((Math.abs(x)<8&&z<-11&&z>-28)||trailSamples.some(p=>Math.hypot(x-p.x,z-p.z)<1.35))dummy.position.y=-2;dummy.rotation.set(0,rnd()*6.28,0);dummy.scale.setScalar(.65+rnd()*.8);dummy.updateMatrix();grass.setMatrixAt(i,dummy.matrix);grass.setColorAt(i,new T.Color().setHSL(.19+rnd()*.06,.18,.45+rnd()*.18));}grass.receiveShadow=true;scene.add(grass);
- const rocks=[],rockMaterial=surfaces.rock||new T.MeshStandardMaterial({color:0x697266,roughness:1});for(let i=0;i<75;i++){const x=(rnd()-.5)*65,z=(rnd()-.5)*65;if((Math.abs(x)<8&&z<-10)||trailSamples.some(p=>Math.hypot(x-p.x,z-p.z)<2))continue;const geometry=new T.IcosahedronGeometry(.2+rnd()*.6,2);geometry.setAttribute('uv1',geometry.attributes.uv.clone());const m=add(geometry,rockMaterial,x,.1,z);m.scale.y=.55;m.rotation.set(rnd(),rnd()*3,rnd());rocks.push(m);}
+ const rockMaterial=surfaces.rock||new T.MeshStandardMaterial({color:0x697266,roughness:1});for(const r of rockLayout()){const geometry=new T.IcosahedronGeometry(r.radius,2);geometry.setAttribute('uv1',geometry.attributes.uv.clone());const m=add(geometry,rockMaterial,r.x,r.y,r.z);m.scale.y=.55;m.rotation.set(...r.rotation);}
  // A narrow stream stays off the main walking trail.
  const waterMat=new T.MeshStandardMaterial({color:0x699b9d,roughness:.22,metalness:.25,transparent:true,opacity:.8});const water=box(-16,.015,-4,2,.015,31,waterMat);for(let i=0;i<25;i++)box(-17+(i%2)*2,.03,-18+i*1.2,.5,.1,.8,'timber').rotation.y=i;
  const flow=new T.Group();scene.add(flow);for(let i=0;i<16;i++){const glint=box(-16+Math.sin(i*2)*.7,.035,-18+i*1.8,.25,.008,.5,new T.MeshBasicMaterial({color:0xc3d5bf,transparent:true,opacity:.25}),flow);glint.castShadow=false;}
@@ -107,29 +108,31 @@ export async function createWorld(scene,onProgress,renderer){
  const dustGeo=new T.BufferGeometry(),dustPos=new Float32Array(90*3);for(let i=0;i<90;i++){dustPos[i*3]=(rnd()-.5)*18;dustPos[i*3+1]=.8+rnd()*6;dustPos[i*3+2]=-10+rnd()*20;}dustGeo.setAttribute('position',new T.BufferAttribute(dustPos,3));const dust=new T.Points(dustGeo,new T.PointsMaterial({color:0xf4dab0,size:.035,transparent:true,opacity:.5}));scene.add(dust);
  const birds=new T.Group();scene.add(birds);for(let i=0;i<3;i++){const g=new T.Group();for(const s of [-1,1]){const wing=box(s*.2,0,0,.4,.025,.15,'timber',g);wing.rotation.z=s*.2;}g.position.set(-8+i*1.5,12+i*.4,-14);birds.add(g);}
  scene.updateMatrixWorld(true);
- const batches=new Map();for(const mesh of [...scene.children]){if(!mesh.isMesh||mesh.isInstancedMesh||Array.isArray(mesh.material))continue;const key=mesh.material.uuid+':'+Object.keys(mesh.geometry.attributes).sort().join(',');if(!batches.has(key))batches.set(key,[]);batches.get(key).push(mesh);}
- for(const meshes of batches.values()){if(meshes.length<2)continue;const geometry=mergeGeometries(meshes.map(m=>(m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone()).applyMatrix4(m.matrixWorld)),false);if(!geometry)continue;const mesh=new T.Mesh(geometry,meshes[0].material);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);meshes.forEach(m=>scene.remove(m));}
+ for(const group of [doorPivot,flow,smoke,birds])group.userData.dynamic=true;
+ const batches=new Map();scene.traverse(mesh=>{if(!mesh.isMesh||mesh.isInstancedMesh||Array.isArray(mesh.material))return;for(let parent=mesh;parent;parent=parent.parent)if(parent.userData.dynamic)return;const key=mesh.material.uuid+':'+Object.keys(mesh.geometry.attributes).sort().join(',');if(!batches.has(key))batches.set(key,[]);batches.get(key).push(mesh);});
+ for(const meshes of batches.values()){if(meshes.length<2)continue;const geometry=mergeGeometries(meshes.map(m=>(m.geometry.index?m.geometry.toNonIndexed():m.geometry.clone()).applyMatrix4(m.matrixWorld)),false);if(!geometry)continue;const mesh=new T.Mesh(geometry,meshes[0].material);mesh.castShadow=meshes.some(m=>m.castShadow);mesh.receiveShadow=meshes.some(m=>m.receiveShadow);scene.add(mesh);meshes.forEach(m=>{m.removeFromParent();m.geometry.dispose();});}
  onProgress('The cabin is ready');
  return {treeData,doorPivot,doorProgress:0,doorTarget:false,interactionMeshes:[],
-  setQuality(value){lodQuality=value;lodDirty=true;},
+  setQuality(value){lodQuality=value;lodDirty=true;grass.count=value==='low'?400:value==='high'?1600:900;},
   setDoor(open){this.doorTarget=open;},
   update(time,dt,ambient,position){const target=this.doorTarget?1:0;this.doorProgress=T.MathUtils.damp(this.doorProgress,target,6,dt);doorPivot.rotation.y=this.doorProgress*Math.PI*.53;
-   if(position&&(lodDirty||Math.hypot(position.x-lodPosition.x,position.z-lodPosition.z)>4)){lodPosition={...position};lodDirty=false;const detailed=new Set();for(const batch of detailBatches){const limit=lodQuality==='low'?7:lodQuality==='high'?30:17,near=[...batch.instances].sort((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)-Math.hypot(b.x-position.x,b.z-position.z)).slice(0,limit);batch.mesh.count=near.length;near.forEach((t,i)=>{detailed.add(t);const s=t.height/batch.height,m=new T.Matrix4().compose(new T.Vector3(t.x,-batch.minY*s,t.z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),t.rotation),new T.Vector3(s,s,s));m.multiply(batch.part);batch.mesh.setMatrixAt(i,m);});batch.mesh.instanceMatrix.needsUpdate=true;batch.mesh.computeBoundingSphere();}
+   if(position&&(lodDirty||Math.hypot(position.x-lodPosition.x,position.z-lodPosition.z)>4)){lodPosition={...position};lodDirty=false;const detailed=new Set();for(const batch of detailBatches){const limit=lodQuality==='low'?3:lodQuality==='high'?14:6,near=[...batch.instances].sort((a,b)=>(a.x-position.x)**2+(a.z-position.z)**2-((b.x-position.x)**2+(b.z-position.z)**2)).slice(0,limit);batch.mesh.count=near.length;near.forEach((t,i)=>{detailed.add(t);const s=t.height/batch.height,m=new T.Matrix4().compose(new T.Vector3(t.x,-batch.minY*s,t.z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),t.rotation),new T.Vector3(s,s,s));m.multiply(batch.part);batch.mesh.setMatrixAt(i,m);});batch.mesh.instanceMatrix.needsUpdate=true;batch.mesh.computeBoundingSphere();}
     for(const batch of impostors){const dummy=new T.Object3D();batch.instances.forEach((t,i)=>{const scale=t.height/batch.height;dummy.position.set(t.x,batch.centerY*scale,t.z);dummy.rotation.set(0,Math.atan2(position.x-t.x,position.z-t.z),0);dummy.scale.setScalar(detailed.has(t)?0:batch.span*scale);dummy.updateMatrix();batch.mesh.setMatrixAt(i,dummy.matrix);});batch.mesh.instanceMatrix.needsUpdate=true;batch.mesh.computeBoundingSphere();}
    }
-   windUniforms.forEach(u=>u.value=ambient?time:0);if(ambient){flow.children.forEach((m,i)=>m.position.z=-18+(time*.5+i*1.8)%30);foliage.forEach((m,i)=>{m.rotation.z=Math.sin(time*.65+i*.7)*.018;});smoke.children.forEach((m,i)=>{const t=(time*.25+i/12)%1;m.position.set(-4.75+Math.sin(time*.3+i)*t*.7,6+t*4,-23.5+t);m.scale.setScalar(.16+t*.65);m.material.opacity=(1-t)*.09;});dust.rotation.y=Math.sin(time*.05)*.04;birds.position.x=Math.sin(time*.06)*23;birds.children.forEach((g,i)=>{g.position.y=12+Math.sin(time*.6+i)*.4;g.children.forEach((w,j)=>w.rotation.z=(j?1:-1)*Math.sin(time*3+i)*.45);});}smoke.visible=dust.visible=birds.visible=ambient;
+   windUniforms.forEach(u=>u.value=ambient?time:0);if(ambient){flow.children.forEach((m,i)=>m.position.z=-18+(time*.5+i*1.8)%30);smoke.children.forEach((m,i)=>{const t=(time*.25+i/12)%1;m.position.set(-4.75+Math.sin(time*.3+i)*t*.7,6+t*4,-23.5+t);m.scale.setScalar(.16+t*.65);m.material.opacity=(1-t)*.09;});dust.rotation.y=Math.sin(time*.05)*.04;birds.position.x=Math.sin(time*.06)*23;birds.children.forEach((g,i)=>{g.position.y=12+Math.sin(time*.6+i)*.4;g.children.forEach((w,j)=>w.rotation.z=(j?1:-1)*Math.sin(time*3+i)*.45);});}smoke.visible=dust.visible=birds.visible=ambient;
   },
   async loadModels(){
-   try{const response=await fetch('./models/manifest.json');if(!response.ok)return;const manifest=await response.json();const loader=new GLTFLoader();
-    if(manifest.trees?.length){const models=await Promise.all(manifest.trees.map(url=>loader.loadAsync(url)));
+   try{const assets=await modelAssets,models=assets.trees;
+    if(models.length){
      models.forEach((asset,index)=>{asset.scene.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(asset.scene),size=bounds.getSize(new T.Vector3()),instances=treeData.filter((_,i)=>i%models.length===index);
       asset.scene.traverse(part=>{if(!part.isMesh)return;const material=part.material.clone();if(material.name.includes('Leaves')){material.transparent=false;material.depthWrite=true;material.alphaTest=.5;material.color.set(0x8ca77c);const time={value:0};windUniforms.push(time);material.onBeforeCompile=shader=>{shader.uniforms.windTime=time;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float windTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x+=sin(windTime*.7+position.y+instanceMatrix[3].x)*.025*max(0.,position.y-2.);');};}const mesh=new T.InstancedMesh(part.geometry,material,instances.length);mesh.castShadow=mesh.receiveShadow=true;
        instances.forEach((t,i)=>{const s=t.height/size.y,m=new T.Matrix4().compose(new T.Vector3(t.x,-bounds.min.y*s,t.z),new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),t.rotation),new T.Vector3(s,s,s));m.multiply(part.matrixWorld);mesh.setMatrixAt(i,m);});scene.add(mesh);detailBatches.push({mesh,instances,height:size.y,minY:bounds.min.y,part:part.matrixWorld.clone()});});
-     });treeMeshes.forEach(g=>g.clear());
+     });
      const horizon=[];for(let i=0;i<240;i++){const angle=i*2.399963,radius=39+(i%6)*5.7;horizon.push({x:Math.sin(angle)*radius,z:Math.cos(angle)*radius,height:8+(i%7)*.8});}
      if(renderer)models.forEach((asset,index)=>{const captured=captureTree(asset.scene,renderer),instances=[...treeData,...horizon].filter((_,i)=>i%models.length===index),material=new T.MeshBasicMaterial({map:captured.texture,alphaTest:.35,side:T.DoubleSide,fog:true,color:0xc6d1b4});const mesh=new T.InstancedMesh(new T.PlaneGeometry(1,1),material,instances.length);mesh.userData.noPick=true;scene.add(mesh);impostors.push({mesh,instances,...captured});});
     }
-    if(manifest.bush){const asset=await loader.loadAsync(manifest.bush);asset.scene.updateMatrixWorld(true);asset.scene.traverse(part=>{if(!part.isMesh)return;const material=part.material.clone();material.transparent=false;material.alphaTest=.5;material.color.set(0x8c9e7c);const mesh=new T.InstancedMesh(part.geometry,material,55);for(let i=0;i<55;i++){const t=treeData[i%treeData.length],s=.45+(i%4)*.13,m=new T.Matrix4().compose(new T.Vector3(t.x+1.6,0,t.z+.8),new T.Quaternion(),new T.Vector3(s,s,s));m.multiply(part.matrixWorld);mesh.setMatrixAt(i,m);}mesh.receiveShadow=true;scene.add(mesh);});}
+    if(!models.length){const trunks=new T.InstancedMesh(new T.CylinderGeometry(.15,.3,1,7),mats.timber,treeData.length),crowns=new T.InstancedMesh(new T.IcosahedronGeometry(1,1),mats.leaf,treeData.length),dummy=new T.Object3D();treeData.forEach((t,i)=>{dummy.position.set(t.x,t.height*.4,t.z);dummy.scale.set(1,t.height*.8,1);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);dummy.position.y=t.height*.75;dummy.scale.set(t.height*.28,t.height*.23,t.height*.28);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);});scene.add(trunks,crowns);}
+    if(assets.bush){const asset=assets.bush;asset.scene.updateMatrixWorld(true);asset.scene.traverse(part=>{if(!part.isMesh)return;const material=part.material.clone();material.transparent=false;material.alphaTest=.5;material.color.set(0x8c9e7c);const mesh=new T.InstancedMesh(part.geometry,material,55);for(let i=0;i<55;i++){const t=treeData[i%treeData.length],s=.45+(i%4)*.13,m=new T.Matrix4().compose(new T.Vector3(t.x+1.6,0,t.z+.8),new T.Quaternion(),new T.Vector3(s,s,s));m.multiply(part.matrixWorld);mesh.setMatrixAt(i,m);}mesh.receiveShadow=true;scene.add(mesh);});}
    }catch(e){console.warn('Using locally authored forest models.',e.message);}
   }
  };

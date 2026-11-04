@@ -8,8 +8,26 @@ export const POINTS={
  skills:{id:'skills',label:'Tool wall',action:'Explore the toolkit',x:0,z:-23.2}
 };
 export const TRAIL=[{x:0,z:22},{x:-2.5,z:13},{x:-2.8,z:8},{x:1.8,z:1},{x:1,z:-6},{x:0,z:-14}];
+export const FLOORS={cabin:.29,porch:.26,step:.14};
+export function floorHeight(p){
+ if(Math.abs(p.x)<=6&&p.z<=-14.9&&p.z>=-25)return FLOORS.cabin;
+ if(Math.abs(p.x)<=2.5&&p.z<=-11.9&&p.z>=-14.9)return FLOORS.porch;
+ if(Math.abs(p.x)<=2&&p.z<=-11.3&&p.z>=-11.9)return FLOORS.step;
+ return 0;
+}
+export function rockLayout(){
+ let seed=5081;const rnd=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;},rocks=[];
+ for(let i=0;i<75;i++){
+  const x=(rnd()-.5)*65,z=(rnd()-.5)*65;
+  const nearTrail=TRAIL.some((a,i)=>{const b=TRAIL[Math.min(i+1,TRAIL.length-1)],dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz||1)));return Math.hypot(x-a.x-dx*t,z-a.z-dz*t)<2.2;});
+  if((Math.abs(x)<8&&z<-10)||nearTrail||Math.hypot(x-SPAWN.x,z-SPAWN.z)<2)continue;
+  const radius=.2+rnd()*.6;
+  rocks.push({id:`rock-${i}`,shape:'circle',x,z,y:.1,radius,w:radius*2,d:radius*2,h:radius+.1,rotation:[rnd(),rnd()*3,rnd()]});
+ }
+ return rocks;
+}
 export const BOXES=[
- {id:'stream',x:-16,z:-4,w:1.9,d:31,h:.05}, {id:'fallen-log',x:8,z:5,w:4.7,d:1,h:.8},
+ {id:'stream',x:-16,z:-4,w:1.9,d:31,h:.05}, {id:'fallen-log',x:8,z:5,w:4.9,d:3.2,h:.85},
  {id:'left-wall',x:-6,z:-20,w:.35,d:10,h:3.5}, {id:'right-wall',x:6,z:-20,w:.35,d:10,h:3.5},
  {id:'back-wall',x:0,z:-25,w:12,d:.35,h:3.5},
  {id:'front-left',x:-3.65,z:-15,w:4.7,d:.35,h:3.5},{id:'front-right',x:3.65,z:-15,w:4.7,d:.35,h:3.5},
@@ -17,11 +35,28 @@ export const BOXES=[
  {id:'diary-desk',x:5.05,z:-21.3,w:1.35,d:2.5,h:1},
  {id:'card-table',x:4.4,z:-16.9,w:1,d:1.2,h:1},
  {id:'stove',x:-4.75,z:-23.5,w:1.3,d:1.3,h:1.8},
- {id:'tools',x:0,z:-24.5,w:3.7,d:.6,h:2.3}
+ {id:'tools',x:0,z:-24.5,w:3.7,d:.6,h:2.3},
+ {id:'porch-left',x:-2.3,z:-13.3,w:.22,d:2.5,h:1.05},
+ {id:'porch-right',x:2.3,z:-13.3,w:.22,d:2.5,h:1.05},
+ {id:'chair',x:3.8,z:-22.7,w:.75,d:.85,h:1.5},
+ {id:'plant',x:2,z:-16,w:.6,d:.6,h:1.6}
 ];
 export function inCabin(p){return Math.abs(p.x)<5.8&&p.z<-15&&p.z>-25;}
-export function obstacles(trees=[],doorOpen=false){return [...BOXES,...trees.map(t=>({id:'tree',x:t.x,z:t.z,w:t.radius*2,d:t.radius*2,h:8})),...(!doorOpen?[{id:'door',x:0,z:-15,w:2.55,d:.25,h:3}]:[])];}
-export function clear(p,solids,r=.32){if(!Number.isFinite(p.x)||!Number.isFinite(p.z)||Math.abs(p.x)>33||Math.abs(p.z)>33)return false;return !solids.some(b=>p.x>b.x-b.w/2-r&&p.x<b.x+b.w/2+r&&p.z>b.z-b.d/2-r&&p.z<b.z+b.d/2+r);}
+export function obstacles(trees=[],doorOpen=false){
+ const solids=[...BOXES,...rockLayout(),...trees.map(t=>({id:'tree',x:t.x,z:t.z,w:t.radius*2,d:t.radius*2,h:8})),...(!doorOpen?[{id:'door',x:0,z:-15,w:2.55,d:.25,h:3}]:[])];
+ const grid=new Map();
+ for(const b of solids)for(let x=Math.floor((b.x-b.w/2)/4);x<=Math.floor((b.x+b.w/2)/4);x++)for(let z=Math.floor((b.z-b.d/2)/4);z<=Math.floor((b.z+b.d/2)/4);z++){
+  const key=`${x},${z}`;if(!grid.has(key))grid.set(key,[]);grid.get(key).push(b);
+ }
+ Object.defineProperty(solids,'grid',{value:grid});return solids;
+}
+export function clear(p,solids,r=.32){
+ if(!Number.isFinite(p.x)||!Number.isFinite(p.z)||Math.abs(p.x)>33||Math.abs(p.z)>33)return false;
+ const overlaps=b=>b.shape==='circle'?Math.hypot(p.x-b.x,p.z-b.z)<b.radius+r:p.x>b.x-b.w/2-r&&p.x<b.x+b.w/2+r&&p.z>b.z-b.d/2-r&&p.z<b.z+b.d/2+r;
+ if(!solids.grid)return !solids.some(overlaps);
+ for(let x=Math.floor((p.x-r)/4);x<=Math.floor((p.x+r)/4);x++)for(let z=Math.floor((p.z-r)/4);z<=Math.floor((p.z+r)/4);z++)if(solids.grid.get(`${x},${z}`)?.some(overlaps))return false;
+ return true;
+}
 export function traverse(a,b,solids,r=.32){const n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.z-a.z)/.12));for(let i=0;i<=n;i++)if(!clear({x:a.x+(b.x-a.x)*i/n,z:a.z+(b.z-a.z)*i/n},solids,r))return false;return true;}
 export function move(position,delta,solids){let p={...position};const n=Math.max(1,Math.ceil(Math.hypot(delta.x,delta.z)/.1));for(let i=0;i<n;i++){const x=delta.x/n,z=delta.z/n;if(clear({x:p.x+x,z:p.z+z},solids))p={x:p.x+x,z:p.z+z};else{if(clear({x:p.x+x,z:p.z},solids))p.x+=x;if(clear({x:p.x,z:p.z+z},solids))p.z+=z;}}return p;}
 export function findRoute(start,end,solids){

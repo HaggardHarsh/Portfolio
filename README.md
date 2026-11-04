@@ -8,6 +8,8 @@ Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build` c
 
 `npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
+`npm run test:experience` uses the Vite dev server. It holds back the character download to verify the portfolio remains usable, checks that reading stops rendering, samples animated shoe geometry on the ground/step/porch/cabin surfaces, and runs into a rendered rock with real mouse and keyboard input. It records its measurements in `artifacts/experience-qa.json`. Automatic graphics is the default; explicit Low, Balanced and High settings remain in the field guide.
+
 ## Controls
 
 Enter the woods, then use WASD to walk and Shift to run. Mouse look uses pointer lock after a deliberate user action; Escape releases the cursor. With the cursor released, drag to look and click reachable ground to walk there. E interacts with a nearby door or portfolio object. V switches cameras. M opens the interactive map. The mobile joystick moves; drag the scene to look and use Interact/View buttons. Header links open content directly.
