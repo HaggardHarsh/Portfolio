@@ -6,7 +6,7 @@ A third-person 3D forest portfolio with a first-person camera and a coloured ASC
 
 Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build` creates the static deployment in `dist/`. Three.js powers the scene; Vite packages local models, scripts, styles and project images. No external runtime asset host, account, database or API is required.
 
-`npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL.
+`npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
 ## Controls
 

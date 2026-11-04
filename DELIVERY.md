@@ -1,4 +1,17 @@
-# Woodland refinement verification · Edition 07
+# Cabin archive verification · Edition 08
+
+The portfolio reading surface is now a bound woodland archive: a forest-green chapter spine, warm paper, brass rules, a botanical sprig and generous serif headings. The index, diary, project folio, tool ledger and calling card each have their own content composition. The map and controls guide share the same forest-and-paper palette. Project previews use root-relative asset paths, declared dimensions and an explicit unavailable-image state. Native dialogs preserve Escape, focus containment and return to the original world trigger across chapter changes.
+
+## Archive delivery gate
+
+- Hard gate PASS: the focused Chromium run opened every chapter, exercised index/next/browser-back navigation and build notes, decoded both real project images, checked the real email/GitHub/LinkedIn destinations, and verified a deliberately failed image displays its fallback. Keyboard containment, Escape and original-trigger focus return pass. No page or content overflow at 320, 390, 768 and 1280px. Paper/ink contrast is 9.35:1; small secondary labels use AA contrast, including the dark spine. No new personal claims, statistics or testimonials were added.
+- Purpose gate PASS: binding shadows establish the archive as a physical cabin object; the fine paper grain gives the pages a quiet material surface; mounted previews distinguish references from prose. Serif diary text, a ruled evidence ledger and the calling card express the objects that open them. The botanical sprig connects the archive to the surrounding woods. Reasons are recorded in DESIGN.md.
+- Liveliness PASS: archive ENERGY 2 / RHYTHM 3 / MOTION 1. The brass accent, numbered chapters and repeated initials establish identity. Page compositions vary with their content. Chapter changes are immediate and the forest pauses during reading. The surrounding world retains its existing motion controls and dials.
+- Craftsmanship PASS within recorded coverage: desktop and phone screenshots were visually reviewed; the chapter strip adapts to a compact phone header, evidence and profile links stack, and close controls remain visible while pages scroll. The production build and all eleven existing Node tests pass. The focused browser run records no runtime errors.
+
+The archive checks live in scripts/panels-qa.mjs (`npm run test:panels`), with screenshots under artifacts/archive-*.png. This edition changes the reading interface; the complete 3D walkthrough recorded below belongs to Edition 07 and was not repeated for this panel-only update.
+
+## Retained woodland refinement · Edition 07
 
 The character is now a textured, realistically proportioned adult male visitor (Mixamo Remy), with visible skin, face, hair, casual clothes and shoes. Native idle and retargeted walk/run replace the neutral mannequin's locomotion. The cloth backpack, straps, pocket, buckles and zip follow the upper-spine bone. This generic avatar is not an assumed likeness of the-builder.
 

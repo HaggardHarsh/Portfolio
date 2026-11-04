@@ -1,4 +1,5 @@
 import './style.css';
+import './panels.css';
 import * as T from 'three';
 import {createWorld} from './scene.js';
 import {createAvatar} from './avatar.js';
@@ -6,7 +7,7 @@ import {createAscii} from './ascii.js';
 import {createSound} from './sound.js';
 import {drawMap} from './minimap.js';
 import {SAVE_KEY,SPAWN,POINTS,BOXES,obstacles,move,findRoute,safeSave,inCabin} from './world.js';
-import {profile} from './content.js';
+import {renderPanel,panelMeta,chapters} from './panels.js';
 const $=s=>document.querySelector(s),all=s=>[...document.querySelectorAll(s)],canvas=$('#scene');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)'),touch=matchMedia('(pointer: coarse)').matches||innerWidth<700;
 let raw={};try{raw=JSON.parse(localStorage.getItem(SAVE_KEY)||localStorage.getItem('sidequest.adventure.v1')||'{}');}catch{}
@@ -14,23 +15,16 @@ const prefs=safeSave(raw);if(!raw.ambient&&reduced.matches)prefs.ambient=false;
 let renderer,scene,camera,world,avatar,ascii,ready=false,playing=false,paused=false,route=[],destination=null,doorOpen=false,near=null,last=0,accumulator=0,yaw=0,pitch=-.08,heading=Math.PI,speed=0,animationTime=0,mapTimer=0,saveTimer=0,toastTimer,drag=null,ignoreClick=false,trigger,quality='balanced';
 let position={...SPAWN},stick={x:0,z:0},velocity={x:0,z:0},doorPassable=false,waitingDestination=null;const keys=new Set(),sound=createSound(),raycaster=new T.Raycaster(),view=new T.Vector3(),desired=new T.Vector3(),eye=new T.Vector3();
 const dialogs=all('dialog'),treeData=[],temp=new T.Vector3();let solid=[];
-const titles={projects:['The workbench','Things I’ve been building.'],about:['The diary','Hello, I’m the-builder.'],skills:['The tool wall','Tools, with a purpose.'],contact:['The calling card','A good place to say hello.'],reading:['The Woodland Cabin','The work & the person.']};
+const titles=Object.fromEntries(Object.entries(panelMeta).map(([id,m])=>[id,[m.place,m.title]]));
 const guideExtras=document.createElement('div');guideExtras.className='guide-extra';guideExtras.innerHTML='<button id="guideMotion" aria-pressed="true">Ambient motion on</button><button id="guideSound" aria-pressed="false">Sound off</button>';$('#guideDialog .quality-label').before(guideExtras);
-const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(prefs));}catch{}}
 function toast(text){$('#toast').textContent=text;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
 function stop(){keys.clear();stick={x:0,z:0};velocity={x:0,z:0};route=[];destination=null;waitingDestination=null;speed=0;$('#walkStatus').hidden=true;}
 function release(){if(document.pointerLockElement===canvas)document.exitPointerLock();}
 function pause(){stop();release();paused=true;}
 function resume(){paused=false;$('#cursorHint').hidden=!playing||touch||document.pointerLockElement===canvas;}
-function content(id){
- if(id==='projects')return profile.projects.map((p,i)=>`<article class="project">${p.image?`<img src="${p.image}" width="800" height="500" loading="lazy" alt="${escape(p.imageAlt)}">`:''}<small>0${i+1} / ${escape(p.tags.join(' · '))}</small><h3>${escape(p.name)}</h3><p>${escape(p.description)}</p><details><summary>Inside the project</summary><p>${escape(p.detail)}</p></details><a href="${p.url}" target="_blank" rel="noopener">Explore the repository ↗</a></article>`).join('');
- if(id==='about')return `<p class="lead">${escape(profile.bio)}</p><p>My projects explore practical tools, playful interfaces, and ways to work with language models. This cabin is a different way to find your way around that work.</p><p>Take a look through the workshop. Follow an idea into its source code. Stay a little while.</p><a class="contact-link" href="https://github.com/portfolio-owner" target="_blank" rel="noopener">Find me on GitHub ↗</a>`;
- if(id==='skills')return `<p class="lead">Every tool has a story behind it.</p><p>These technologies appear in my public repositories.</p><ul class="skills-list">${profile.skills.map(s=>`<li><b>${escape(s.name)}</b><small>${escape(s.evidence)}</small></li>`).join('')}</ul>`;
- if(id==='contact')return `<p class="lead">For a role, a collaboration, or a good conversation.</p><p><a class="contact-link" href="mailto:${profile.email}">${profile.email}</a></p>${profile.links.map(l=>`<p><a class="contact-link" href="${l.url}" target="_blank" rel="noopener">${escape(l.label)} ↗</a></p>`).join('')}`;
- return ['about','projects','skills','contact'].map(s=>`<section class="project"><h3>${s[0].toUpperCase()+s.slice(1)}</h3>${content(s)}</section>`).join('');
-}
-function showContent(id,push=true){if(!titles[id])return;trigger=document.activeElement;pause();const [place,title]=titles[id];$('#contentPlace').textContent=place;$('#contentTitle').textContent=title;$('#contentEyebrow').textContent=id==='reading'?'THE WOODLAND CABIN / The Woodland Cabin':'A ROOM FULL OF IDEAS';$('#contentBody').innerHTML=content(id);if(id!=='reading'&&!prefs.visited.includes(id))prefs.visited.push(id);persist();if(push&&location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);if(!$('#contentDialog').open)$('#contentDialog').showModal();$('#contentDialog').scrollTop=0;}
+function showContent(id,push=true){if(!titles[id])return;const d=$('#contentDialog');if(!d.open)trigger=document.activeElement;pause();const meta=panelMeta[id];d.dataset.section=id;$('#contentPlace').textContent=meta.place;$('#contentTitle').textContent=meta.title;$('#contentEyebrow').textContent=meta.eyebrow;$('#pageNumber').textContent=meta.number;$('#contentBody').innerHTML=renderPanel(id);all('[data-chapter]').forEach(b=>{if(b.dataset.chapter===id)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});const next=chapters[(chapters.indexOf(id)+1)%chapters.length];$('#nextChapter').dataset.openChapter=next;$('#nextChapter').innerHTML=`${next==='reading'?'Cabin index':next[0].toUpperCase()+next.slice(1)} <span aria-hidden="true">→</span>`;all('#contentBody img').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;img.parentElement.querySelector('.image-fallback').hidden=false;},{once:true}));if(id!=='reading'&&!prefs.visited.includes(id))prefs.visited.push(id);persist();if(push&&location.hash!==`#${id}`)history.pushState(null,'',`#${id}`);if(!d.open)d.showModal();$('.folio-pages').scrollTop=0;}
+$('#contentDialog').addEventListener('click',e=>{const button=e.target.closest('[data-open-chapter],[data-chapter]');if(button)showContent(button.dataset.openChapter||button.dataset.chapter);});
 function closeDialog(d){d.close();if(d.id==='contentDialog')history.replaceState(null,'',location.pathname);resume();trigger?.focus({preventScroll:true});}
 function showDialog(d){trigger=document.activeElement;pause();d.showModal();}
 for(const d of dialogs){d.querySelector('[data-close]').addEventListener('click',()=>closeDialog(d));d.addEventListener('cancel',e=>{e.preventDefault();closeDialog(d);});d.addEventListener('keydown',e=>{if(e.key!=='Tab')return;const controls=[...d.querySelectorAll('button,a[href],summary,select')].filter(el=>el.getClientRects().length&&!el.disabled),first=controls[0],last=controls.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});}
