@@ -38,16 +38,18 @@ try{
    await page.locator('#renderToggle').click();await page.locator(name==='desktop'?'#cameraToggle':'#touchCamera').click();
    await page.locator('.header [data-content="about"]').click();
    const state=await page.evaluate(()=>woodland.snapshot());assert.equal(state.render,'ascii');assert.equal(state.camera,'first');
-   await page.screenshot({path:`artifacts/launch-${browserName}-${name}.png`});
    await page.keyboard.press('Escape');
   }
   await page.goto(`${url}/#constructor`);await page.waitForFunction(()=>document.body.classList.contains('enhanced')||!document.querySelector('#errorNotice').hidden);
   assert.equal(await page.locator('#contentDialog').evaluate(dialog=>dialog.open),false,'prototype names cannot open archive chapters');
   assert.deepEqual(await page.evaluate(()=>window.launchViolations),[],'normal navigation must not violate CSP');
-  await page.evaluate(()=>{const script=document.createElement('script');script.textContent='window.untrustedLaunchScriptRan=true';document.body.append(script);const image=document.createElement('img');image.src='https://example.invalid/tracker.png';document.body.append(image);});
+  await page.evaluate(()=>{const script=document.createElement('script');script.id='launchInjectedScript';script.textContent='window.untrustedLaunchScriptRan=true';document.body.append(script);const image=document.createElement('img');image.id='launchExternalImage';image.src='https://example.invalid/tracker.png';document.body.append(image);});
   await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>window.untrustedLaunchScriptRan),undefined);
   const violations=await page.evaluate(()=>window.launchViolations);assert.ok(violations.some(v=>v.directive.startsWith('script-src')));assert.ok(violations.some(v=>v.directive==='img-src'));
+  await page.evaluate(()=>{document.querySelector('#launchInjectedScript').remove();document.querySelector('#launchExternalImage').remove();});
+  // WebKit's screenshot helper inserts a temporary style, so capture after CSP assertions.
+  if(graphics)await page.screenshot({path:`artifacts/launch-${browserName}-${name}.png`});
   report.profiles.push({name,graphics,normalPolicyViolations:0,injectedScriptBlocked:true,externalImageBlocked:true});await context.close();
  }
  const noJs=await browser.newContext({javaScriptEnabled:false}),fallback=await noJs.newPage();await fallback.goto(url);assert.ok(await fallback.locator('#reading').isVisible());assert.equal(await fallback.locator('#loading').isVisible(),false);await noJs.close();
