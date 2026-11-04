@@ -10,7 +10,9 @@
   "test": "node --test tests/*.test.mjs",
   "test:browser": "node scripts/browser-qa.mjs",
   "test:panels": "node scripts/panels-qa.mjs",
-  "test:experience": "node scripts/experience-qa.mjs"
+  "test:experience": "node scripts/experience-qa.mjs",
+  "test:launch": "node scripts/launch-qa.mjs",
+  "generate:share": "node scripts/generate-share-card.mjs"
  },
  "dependencies": {
   "three": "^0.185.0"

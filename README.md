@@ -6,9 +6,21 @@ A third-person 3D forest portfolio with a first-person camera and a coloured ASC
 
 Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build` creates the static deployment in `dist/`. Three.js powers the scene; Vite packages local models, scripts, styles and project images. No external runtime asset host, account, database or API is required.
 
+The source repository is https://github.com/portfolio-owner/Portfolio. The primary domain is `https://portfolio.example`; its DNS and certificate must be verified before announcing it. [DNS-SETUP.md](DNS-SETUP.md) contains the exact Namify records and dashboard instructions. The existing Sites URL remains available during setup.
+
 `npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
 `npm run test:experience` uses the Vite dev server. It holds back the character download to verify the portfolio remains usable, checks that reading stops rendering, samples animated shoe geometry on the ground/step/porch/cabin surfaces, and runs into a rendered rock with real mouse and keyboard input. It records its measurements in `artifacts/experience-qa.json`. Automatic graphics is the default; explicit Low, Balanced and High settings remain in the field guide.
+
+## Production launch checks
+
+Run `npm ci`, `npm test`, `npm audit --audit-level=high`, then `npm run build`. Start `npm exec vite preview -- --host 127.0.0.1 --port 4175` and run `npm run test:launch`. Install Playwright Chromium first, or set `SIDEQUEST_BROWSER_PATH` to an existing Chromium executable. `SIDEQUEST_BROWSER=webkit npm run test:launch` uses the WebKit engine when its system dependencies are installed. The workflow in `.github/workflows/checks.yml` runs both engines on Ubuntu. Phone profiles emulate viewport, touch and browser conditions; they do not replace physical iPhone/Android testing.
+
+`config/launch.mjs` holds the canonical origin and security policy. Set the build-time `SITE_URL` to a different HTTPS origin when changing hosts; `.env.example` documents the field. The build generates the CSP meta fallback, canonical/Open Graph/social-card tags, `robots.txt`, `sitemap.xml` and `_headers`. `vercel.json` provides equivalent response headers on Vercel. Verify headers on the final host because an HTML meta tag cannot implement every security header. See [SECURITY.md](SECURITY.md).
+
+The social preview is a 1200×630 JPEG built from the actual woodland preview and the existing cabin typography. `npm run generate:share` regenerates it with Playwright. It is committed so a normal build does not require a browser. The preview is loaded by link-sharing services, not added to the page's startup downloads.
+
+Personal content lives in `src/content.js`. The résumé field remains empty until a real file or URL is supplied; no professional employment title or résumé has been invented. Enable two-factor authentication directly in your GitHub, hosting and registrar accounts; the project cannot enable it for you.
 
 ## Controls
 
