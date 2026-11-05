@@ -34,9 +34,21 @@ try {
   }
   await page.screenshot({path:`artifacts/archive-${id}.png`});
  }
- assert.equal(await page.locator('.card-email').count(),0);
- assert.equal(await page.locator('.correspondence-link').count(),0);
- assert.match(await page.locator('.privacy-note').textContent(),/not published/);
+ const configured=!!process.env.VITE_CONTACT_EMAIL||!!process.env.VITE_LINKEDIN_URL;
+ if(configured){
+  assert.equal(await page.locator('.card-owner').textContent(),process.env.VITE_PUBLIC_NAME||'The Woodland Cabin');
+  assert.equal(await page.locator('.card-email').count(),process.env.VITE_CONTACT_EMAIL?1:0);
+  if(process.env.VITE_CONTACT_EMAIL)assert.equal(await page.locator('.card-email').getAttribute('href'),`mailto:${process.env.VITE_CONTACT_EMAIL}`);
+  assert.equal(await page.locator('.correspondence-link').count(),process.env.VITE_LINKEDIN_URL?1:0);
+  if(process.env.VITE_LINKEDIN_URL){
+   assert.equal(await page.locator('.correspondence-link').getAttribute('href'),process.env.VITE_LINKEDIN_URL);
+   assert.equal(await page.locator('.correspondence-link').getAttribute('rel'),'noopener noreferrer');
+  }
+ }else{
+  assert.equal(await page.locator('.card-email').count(),0);
+  assert.equal(await page.locator('.correspondence-link').count(),0);
+  assert.match(await page.locator('.contact-empty').textContent(),/No contact details/);
+ }
  await page.locator('#nextChapter').click();
  assert.equal(await chapter('reading').getAttribute('aria-current'),'page');
  await page.goBack();
@@ -54,6 +66,8 @@ try {
   if(width===390) {
    await open('about');
    await page.screenshot({path:'artifacts/archive-mobile.png'});
+   await open('contact');
+   await page.screenshot({path:'artifacts/archive-contact-mobile.png'});
   }
  }
  // Preserve the original world trigger even after navigating to another archive chapter.
@@ -84,8 +98,13 @@ try {
  await page.waitForSelector('.image-fallback:not([hidden])');
  assert.equal(await page.locator('#contentBody img').first().isVisible(),false);
  assert.match(await page.locator('.image-fallback').first().textContent(),/notes/);
+ const noJs=await browser.newContext({javaScriptEnabled:false}),fallback=await noJs.newPage();
+ await fallback.goto(url);
+ assert.equal(await fallback.locator('#contact a[href^="mailto:"]').count(),process.env.VITE_CONTACT_EMAIL?1:0);
+ assert.equal(await fallback.locator('#contact a[href*="linkedin.com/in/"]').count(),process.env.VITE_LINKEDIN_URL?1:0);
+ await noJs.close();
  assert.deepEqual(errors,[]);
- console.log('PASS: archive chapters, overview/next/back navigation, project preview, build notes, privacy notice, 320/390/768/1280 layouts, sticky close, keyboard containment/return, map/guide, failed-image state; no runtime errors.');
+ console.log('PASS: archive chapters, overview/next/back navigation, project preview, build notes, configured contact or empty state, 320/390/768/1280 layouts, sticky close, keyboard containment/return, map/guide, failed-image state; no runtime errors.');
 } finally {
  await browser.close();
 }

@@ -18,6 +18,10 @@ Set the build-time `SITE_URL` environment variable in Amplify to the deployed HT
 
 Navigation uses fragments such as `/#projects`, so this site needs no catch-all rewrite to `index.html`. Remove an unconditional `/<*>` → `/index.html` 200 rewrite if one was added; it can return HTML when a script or model file is missing.
 
+### Public calling card
+
+In Amplify's **Hosting → Environment variables**, set `VITE_PUBLIC_NAME`, `VITE_CONTACT_EMAIL`, and `VITE_LINKEDIN_URL`, then rebuild the app. These optional values populate the calling card and the no-JavaScript contact section. They are public website content, embedded at build time, and must never contain passwords or tokens. Real values stay in the hosting environment rather than this public repository. Local previews can use an ignored `.env.local` or `.env.production.local` file; `.env.example` lists the fields without personal values. Without contact values, the page shows an honest empty state and a link back to the projects.
+
 `npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
 `npm run test:experience` uses the Vite dev server. It holds back the character download to verify the portfolio remains usable, checks that reading stops rendering, samples animated shoe geometry on the ground/step/porch/cabin surfaces, and runs into a rendered rock with real mouse and keyboard input. It records its measurements in `artifacts/experience-qa.json`. Automatic graphics is the default; explicit Low, Balanced and High settings remain in the field guide.

@@ -1,3 +1,6 @@
+import {readPublicContact} from './contact.js';
+
+export const publicContact=readPublicContact(import.meta.env);
 export const profile={
  name:'The Woodland Cabin',role:'Projects, notes & tools',
  bio:'A collection of desktop companions, community tools, and applications that work with language models.',

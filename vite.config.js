@@ -1,17 +1,19 @@
 import {defineConfig,loadEnv} from 'vite';
 import {documentPolicy,headersFile,normalizeSiteUrl,securityHeaders,siteTitle,siteDescription} from './config/launch.mjs';
+import {readPublicContact,renderContactFallback} from './src/contact.js';
 
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 export default defineConfig(({command,mode})=>{
  const env=loadEnv(mode,process.cwd(),'SITE_'),url=normalizeSiteUrl(process.env.SITE_URL||env.SITE_URL);
+ const contact=readPublicContact({...loadEnv(mode,process.cwd(),'VITE_'),...process.env});
  return {
   preview:{headers:securityHeaders},
   plugins:[{
    name:'portfolio-launch',
    transformIndexHtml(html){
     const policy=command==='build'?`<meta http-equiv="Content-Security-Policy" content="${escape(documentPolicy)}">`:'';
-    return html.replace('<!-- security-policy -->',policy).replace('<!-- sharing-metadata -->',[
+    return html.replace('<!-- public-contact -->',renderContactFallback(contact)).replace('<!-- security-policy -->',policy).replace('<!-- sharing-metadata -->',[
      '<meta name="referrer" content="strict-origin-when-cross-origin">',
      `<link rel="canonical" href="${escape(url)}/">`,
      '<meta property="og:type" content="website">',

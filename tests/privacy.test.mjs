@@ -13,7 +13,7 @@ test('public content omits personal contact and profile fields',()=>{
   assert.ok(!/mailto:|linkedin\.com\/in\/|github\.com\//i.test(html));
   assert.ok(!/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(html));
  }
- assert.match(renderPanel('contact'),/not published/);
+ assert.match(renderPanel('contact'),/No contact details are listed yet/);
 });
 test('fallback and public setup docs do not restore contact links or verification values',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');

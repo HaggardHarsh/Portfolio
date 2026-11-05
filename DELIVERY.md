@@ -1,4 +1,17 @@
-# Movement and performance verification · Edition 09
+# Calling card · Edition 11
+
+The calling card uses the archive's existing leather, warm paper, serif headings and brass rules. ENERGY 2 / RHYTHM 3 / MOTION 1 remain unchanged. The name and email form the card's focal point; the separate ruled LinkedIn row signals a destination outside the cabin. No new visual assets or animation were added.
+
+Contact is restored in the navigation, chapter index and no-JavaScript view. Public name, email and LinkedIn values come from hosting build variables. The committed defaults contain no personal values. Invalid email addresses and non-HTTPS or unrelated profile URLs are omitted, names are HTML-escaped, and LinkedIn links use `noopener noreferrer`. An unconfigured build has an explicit empty state with a working project link.
+
+## Calling card delivery gate
+
+- Hard gate PASS within coverage: 27 Node tests and the static build pass. The panel browser checks verify configured destinations, the no-JavaScript contact view, keyboard containment and focus return, image failure states and layouts at 320, 390, 768 and 1280px. The Chromium launch checks pass desktop, iPhone and Android profiles with the existing CSP. No contact values appear in tracked or non-ignored source files.
+- Purpose gate PASS: the paper border and binding shadow retain the calling-card metaphor; the serif owner name establishes the hierarchy; the single external arrow identifies the LinkedIn destination. No unrelated decoration or controls were introduced.
+- Liveliness PASS: the existing fern motif, green binding, paper surface and brass accent remain the identity. The email card and ruled profile row have distinct compositions. The contact page adds no motion.
+- Craftsmanship PASS within coverage: desktop and phone contact screenshots were reviewed. Email text wraps within its card; both links have usable touch areas and visible keyboard focus. Card text contrast measures 9.48:1 for the name, 7.01:1 for links, 5.65:1 for body copy and 5.08:1 for the footer. The existing archive supplies empty, image-error and loading states. The link destinations were verified without sending a message.
+
+## Retained movement and performance verification · Edition 09
 
 Rendered rocks and movement collision now share one seeded layout. Circular rock clearance applies to manual movement and automatic routes. Porch rails, the chair and the plant block movement; the fallen log's blocker covers its rotated footprint. Ground, first step, porch, threshold and cabin height come from shared surface data. The avatar samples animated shoe extrema to keep the actual sole geometry above those surfaces while idle, walking, running and blending between clips. The camera uses the same floor height.
 
