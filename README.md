@@ -8,6 +8,16 @@ Run `npm install`, then `npm run dev` (http://localhost:4174). `npm run build:st
 
 The public demo omits personal contact details, profile links, and account-specific domain setup data. [DNS-SETUP.md](DNS-SETUP.md) describes deployment configuration without identifying the owner.
 
+## AWS Amplify Hosting
+
+Connect this repository and branch to Amplify. The root `amplify.yml` installs dependencies with `npm ci`, runs `npm run build:static`, and publishes **only `dist/`**. Amplify uses this file instead of its saved console build settings. Use Node.js 22.12 or newer; the project's CI uses Node.js 24.
+
+The source `index.html` imports `/src/main.js`, which Vite compiles into JavaScript and CSS under `/assets/`. Publishing the repository root skips that compilation and leaves the page unstyled, with missing images and models. `npm run build` creates a Sites-specific Worker bundle; Amplify needs `npm run build:static` instead.
+
+Set the build-time `SITE_URL` environment variable in Amplify to the deployed HTTPS origin for canonical and sharing links, then redeploy. `customHttp.yml` applies the existing security headers using Amplify's supported configuration format. See [AWS build settings](https://docs.aws.amazon.com/amplify/latest/userguide/build-settings.html) and [custom headers](https://docs.aws.amazon.com/amplify/latest/userguide/custom-header-YAML-format.html).
+
+Navigation uses fragments such as `/#projects`, so this site needs no catch-all rewrite to `index.html`. Remove an unconditional `/<*>` → `/index.html` 200 rewrite if one was added; it can return HTML when a script or model file is missing.
+
 `npm test` checks navigation, capsule-foot clearance, shared object geometry, closed/open door routing, collision sweeps, preferences and location transitions. `npm run test:browser` requires a Playwright Chromium installation or `SIDEQUEST_BROWSER_PATH` pointing to an existing executable. Start the dev server first. `SIDEQUEST_QA_URL` can target another preview URL. `npm run test:panels` checks the archive chapters, navigation, image loading and failure state, contact destinations, keyboard focus, and layouts from 320px to 1280px.
 
 `npm run test:experience` uses the Vite dev server. It holds back the character download to verify the portfolio remains usable, checks that reading stops rendering, samples animated shoe geometry on the ground/step/porch/cabin surfaces, and runs into a rendered rock with real mouse and keyboard input. It records its measurements in `artifacts/experience-qa.json`. Automatic graphics is the default; explicit Low, Balanced and High settings remain in the field guide.
